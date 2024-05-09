@@ -10,6 +10,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	flagModelCpu bool
+)
+
 // cpuCmd represents the cpu command
 var cpuCmd = &cobra.Command{
 	Use:   "cpu",
@@ -21,10 +25,7 @@ sysmon cpu -model`,
 }
 
 func cpuInfo(cmd *cobra.Command, args []string) {
-	flagModelCpu := cmd.Flags().Bool("model", false, "show the model of your cpu")
-	cmd.Println(*flagModelCpu)
-
-	if *flagModelCpu {
+	if flagModelCpu {
 		info, err := cpu.Info()
 		if err != nil {
 			cmd.PrintErrln(err)
@@ -37,6 +38,5 @@ func cpuInfo(cmd *cobra.Command, args []string) {
 
 func init() {
 	rootCmd.AddCommand(cpuCmd)
-
-	cpuCmd.Flags().BoolP("model", "m", false, "show the model of your cpu")
+	cpuCmd.Flags().BoolVarP(&flagModelCpu, "model", "m", false, "show the model of your cpu")
 }

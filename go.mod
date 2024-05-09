@@ -1,4 +1,4 @@
-module github.com/saeidalz13/system-monitor
+module github.com/saeidalz13/sysmon
 
 go 1.22.0
 
