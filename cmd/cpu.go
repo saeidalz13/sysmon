@@ -4,6 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/shirou/gopsutil/v3/load"
 	"github.com/spf13/cobra"
 )
+
 
 var (
 	second int32
@@ -24,6 +26,7 @@ var cpuCmd = &cobra.Command{
 sysmon cpu -model`,
 }
 
+// model sub command
 var modelCmd = &cobra.Command{
 	Use:   "model",
 	Short: "Shows the model of CPU",
@@ -39,6 +42,7 @@ func subCmdCpuModel(cmd *cobra.Command, args []string) {
 	cmd.Println(info[0].ModelName)
 }
 
+// CPU percentage sub command
 var percentCmd = &cobra.Command{
 	Use:   "usage",
 	Short: "Shows the usage percentage of CPU",
@@ -46,17 +50,37 @@ var percentCmd = &cobra.Command{
 }
 
 func subCmdCpuUsage(cmd *cobra.Command, args []string) {
-	cmd.Printf("calculating cpu usage over %d second...\n\n", second)
+	cmd.Printf("calculating cpu cores usage over %d second...\n\n", second)
+	done := make(chan bool)
+
+	go func() {
+		i := 0
+		for {
+			select {
+			case <-done:
+				return
+			default:
+				fmt.Printf("\rSeconds Elapsed: %d", i)
+				time.Sleep(time.Second)
+				i++
+			}
+		}
+	}()
+
 	usage, err := cpu.Percent(time.Second*time.Duration(second), true)
 	if err != nil {
 		cmd.PrintErrln(err)
 		os.Exit(ExitError)
 	}
+
+	// Print the load
+	fmt.Println()
 	for i, percent := range usage {
-		cmd.Printf("cpu %d:\t%.2f%%\n", i, percent)
+		cmd.Printf("cpu %d:\t%.2f%%\n", i+1, percent)
 	}
 }
 
+// CPU average load command
 var loadCmd = &cobra.Command{
 	Use:   "load",
 	Short: "Shows the load averages from your CPU",
@@ -76,6 +100,7 @@ func subCmdCpuLoad(cmd *cobra.Command, args []string) {
 	cmd.Printf("15-min load:\t%+.2f\n", avgStat.Load15)
 }
 
+// Count the logical cores of the machine cpu subcommand
 var countCpu = &cobra.Command{
 	Use:   "count",
 	Short: "Shows the number of logical cores",
